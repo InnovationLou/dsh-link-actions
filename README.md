@@ -1,5 +1,8 @@
 # dsh-link-actions
 
+[![npm](https://img.shields.io/npm/v/dsh-link-actions.svg)](https://www.npmjs.com/package/dsh-link-actions)
+[![license](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
 给 DSH 聊天里的链接加右键菜单：文件/目录可以「打开、在资源管理器中显示、复制路径、另存为」，HTTP(S) 链接可以「在默认浏览器中打开、复制链接」。
 
 > Right-click menus for links in DeepSeek Harness chat: file and folder links can open, reveal, copy their path, or be saved; HTTP(S) links can open in the browser or copy the URL.
@@ -11,19 +14,25 @@ DSH 官方仓库目前**不接受外部 PR**（[CONTRIBUTING.zh.md](https://gith
 
 ## 安装
 
-从本仓库安装（`lib/` 已随仓库提交，装完不需要构建）：
+从 npm 安装：
+
+```powershell
+dsh plugin --profile desktop add dsh-link-actions
+```
+
+也可以直接从本仓库装（`lib/` 已随仓库提交，同样不需要构建）：
 
 ```powershell
 dsh plugin --profile desktop add github:InnovationLou/dsh-link-actions
 ```
 
-本地目录安装：
+本地目录安装（改代码时用）：
 
 ```powershell
 dsh plugin --profile desktop add link:E:\MyProject\dsh-link-actions
 ```
 
-然后在 `~\.dsh\profiles\desktop\cordis.patch.yml` 末尾追加：
+装完在 `~\.dsh\profiles\desktop\cordis.patch.yml` 末尾追加：
 
 ```yaml
 - insert:
@@ -85,6 +94,7 @@ HTTP(S) 链接（Markdown 里的 `<a>`）：
 
 | 场景 | 结果 |
 | --- | --- |
+| **从 npm 安装** | `dsh plugin add dsh-link-actions`（0.1.0，8 文件 / 71.5 kB）后在全新 profile 里启动客户端，右键菜单正常弹出 |
 | **从 GitHub 安装** | `dsh plugin add github:InnovationLou/dsh-link-actions` 后在全新 profile 里启动客户端，右键菜单正常弹出 |
 | 目录链接右键 | 菜单 5 项：打开 / 打开方式 / 在资源管理器中显示 / 复制路径 / 另存为 |
 | 图片文件「打开方式」 | 列出系统关联：画图、照片、VS Code、Typora、Notepad++ … |
