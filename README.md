@@ -156,6 +156,10 @@ from the commit, and publishes with a provenance attestation. Running the same
 workflow by hand (`workflow_dispatch`) publishes whatever version the commit
 already carries.
 
+`0.1.1` was the first release published this way: npm recorded a SLSA v1
+provenance statement for it ([attestations](https://registry.npmjs.org/-/npm/v1/attestations/dsh-link-actions@0.1.1)),
+and no npm token exists anywhere in the pipeline.
+
 ## License
 
 MIT

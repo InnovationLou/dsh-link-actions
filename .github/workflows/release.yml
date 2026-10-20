@@ -59,6 +59,7 @@ jobs:
       # 200 = npm is configured correctly and the CLI is the problem.
       # Only the status and a redacted body are printed; the minted token never is.
       - name: Probe the npm OIDC exchange
+        continue-on-error: true
         run: |
           set -euo pipefail
           oidc=$(curl -sS -H "Authorization: bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" \

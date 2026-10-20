@@ -148,6 +148,8 @@ git push origin main --follow-tags
 
 推标签会触发 `release`：重建 `lib/`、与提交内容不一致就失败、然后带 provenance 证明发布。手动跑同一流水线（`workflow_dispatch`）则发布当前提交里的版本号。
 
+`0.1.1` 就是这样发布的第一个版本：npm 为它记录了 SLSA v1 provenance 证明（[attestations](https://registry.npmjs.org/-/npm/v1/attestations/dsh-link-actions@0.1.1)），整条流水线里不存在任何 npm token。
+
 ## License
 
 MIT
