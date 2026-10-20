@@ -10,7 +10,9 @@
     "./package.json": "./package.json"
   },
   "files": [
-    "lib"
+    "lib",
+    "src",
+    "scripts"
   ],
   "license": "MIT",
   "author": "InnovationLou",
@@ -33,7 +35,11 @@
   },
   "scripts": {
     "build": "node scripts/build.mjs",
-    "check": "node scripts/build.mjs && node --check lib/client.js"
+    "check": "node scripts/build.mjs && node --check lib/client.js",
+    "prepublishOnly": "npm run check"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "dsh": {
     "client": {
