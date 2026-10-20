@@ -1,0 +1,44 @@
+name: release
+
+# Publishes the version in package.json when a v* tag lands, and on demand.
+#
+# Authentication is npm Trusted Publishing: GitHub mints an OIDC token for this
+# job, npm exchanges it for a short-lived publish grant, and no long-lived npm
+# token exists anywhere. That is also why the account's
+# "require 2FA / disallow bypass tokens" setting stays intact — there is no
+# token to bypass with.
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  # Required for the OIDC token npm exchanges; without it there is no publish.
+  id-token: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Show toolchain
+        run: node --version && npm --version
+
+      # The bundle ships in the repository, so a release must not publish a
+      # stale lib/: rebuild and fail when it differs from what is committed.
+      - name: Verify the committed bundle matches src/
+        run: |
+          npm run check
+          git diff --exit-code -- lib
+
+      - name: Publish with provenance
+        run: npm publish --provenance --access public

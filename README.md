@@ -124,6 +124,38 @@ dsh --profile <name> --patch test/overlay.yml --no-open --port 7401
 
 so verification never touches the profile you use daily.
 
+## Releasing
+
+Publishing runs on npm **Trusted Publishing**: the `release` workflow asks GitHub
+for an OIDC token, npm exchanges it for a short-lived publish grant, and no npm
+token is stored in the repository or in any secret. That keeps the account's
+"require 2FA and disallow bypass tokens" setting intact — there is no token that
+could bypass it.
+
+One-time setup, on npmjs.com → the package → **Settings → Trusted Publisher
+(GitHub Actions)**:
+
+| Field | Value |
+| --- | --- |
+| Publisher | GitHub Actions |
+| Organization or user | `InnovationLou` |
+| Repository | `dsh-link-actions` |
+| Workflow filename | `release.yml` |
+| Environment | leave empty |
+
+Then a release is three commands:
+
+```powershell
+npm version patch --no-git-tag-version
+git commit -am "release: v0.1.2" && git tag v0.1.2
+git push origin main --follow-tags
+```
+
+The tag starts `release`, which rebuilds `lib/`, fails if the rebuild differs
+from the commit, and publishes with a provenance attestation. Running the same
+workflow by hand (`workflow_dispatch`) publishes whatever version the commit
+already carries.
+
 ## License
 
 MIT

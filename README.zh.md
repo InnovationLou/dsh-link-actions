@@ -124,6 +124,30 @@ dsh --profile <name> --patch test/overlay.yml --no-open --port 7401
 
 这样验证不会碰日常使用的 profile。
 
+## 发布
+
+发布走 npm 的 **Trusted Publishing**：`release` 流水线向 GitHub 申请 OIDC token，npm 用它换一张短期发布凭据，仓库里不存任何 npm token，也不需要密钥。这正是为了保住你账号上「强制 2FA、禁止 bypass token」的设置 —— 没有 token 可以绕过它。
+
+一次性配置，在 npmjs.com → 该包 → **Settings → Trusted Publisher (GitHub Actions)**：
+
+| 字段 | 值 |
+| --- | --- |
+| Publisher | GitHub Actions |
+| Organization or user | `InnovationLou` |
+| Repository | `dsh-link-actions` |
+| Workflow filename | `release.yml` |
+| Environment | 留空 |
+
+之后每次发版三条命令：
+
+```powershell
+npm version patch --no-git-tag-version
+git commit -am "release: v0.1.2" && git tag v0.1.2
+git push origin main --follow-tags
+```
+
+推标签会触发 `release`：重建 `lib/`、与提交内容不一致就失败、然后带 provenance 证明发布。手动跑同一流水线（`workflow_dispatch`）则发布当前提交里的版本号。
+
 ## License
 
 MIT
