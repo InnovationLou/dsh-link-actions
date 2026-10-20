@@ -3,36 +3,39 @@
 [![npm](https://img.shields.io/npm/v/dsh-link-actions.svg)](https://www.npmjs.com/package/dsh-link-actions)
 [![license](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-给 DSH 聊天里的链接加右键菜单：文件/目录可以「打开、在资源管理器中显示、复制路径、另存为」，HTTP(S) 链接可以「在默认浏览器中打开、复制链接」。
+English | [中文](README.zh.md)
 
-> Right-click menus for links in DeepSeek Harness chat: file and folder links can open, reveal, copy their path, or be saved; HTTP(S) links can open in the browser or copy the URL.
-> Tested against the shipped `0.2.1-rc.2` runtime. Requires a DSH client build that serves client plugins (the desktop app and `dsh web` both do).
+Right-click menus for links in DeepSeek Harness chat. File and folder links gain **open**, **open with**, **show in file manager**, **copy path**, and **save as**; HTTP(S) links gain **open in browser** and **copy link**.
 
-![聊天里的文件链接右键菜单](docs/context-menu-zh.png)
+![The file-link menu over a chat message](docs/context-menu-zh.png)
 
-DSH 官方仓库目前**不接受外部 PR**（[CONTRIBUTING.zh.md](https://github.com/deepseek-ai/deepseek-harness/blob/master/CONTRIBUTING.zh.md) 第 9 行），所以这个能力以插件形式提供 —— 这也是官方推荐的扩展路径。DSH 客户端没有「单个链接」级别的 slot，插件在 document 的捕获阶段监听 `contextmenu`，识别 Markdown 渲染出的两种链接，自己绘制菜单。
+## Why a plugin
 
-## 安装
+The DSH repository [does not accept external pull requests](https://github.com/deepseek-ai/deepseek-harness/blob/master/CONTRIBUTING.md) today, and the plugin ecosystem is the path it recommends instead. The client also has no per-link slot: a Markdown link is a plain anchor or button, so this plugin listens for `contextmenu` on the document, recognises the two link shapes the Markdown renderer emits, and draws its own menu.
 
-从 npm 安装：
+Tested against the shipped `0.2.1-rc.2` runtime. It needs a DSH client build that serves client plugins; the desktop app and `dsh web` both do.
+
+## Install
+
+From npm:
 
 ```powershell
 dsh plugin --profile desktop add dsh-link-actions
 ```
 
-也可以直接从本仓库装（`lib/` 已随仓库提交，同样不需要构建）：
+Straight from this repository (`lib/` is committed, so no build step either):
 
 ```powershell
 dsh plugin --profile desktop add github:InnovationLou/dsh-link-actions
 ```
 
-本地目录安装（改代码时用）：
+From a local checkout, which is what you want while editing:
 
 ```powershell
 dsh plugin --profile desktop add link:E:\MyProject\dsh-link-actions
 ```
 
-装完在 `~\.dsh\profiles\desktop\cordis.patch.yml` 末尾追加：
+Then append this to `~\.dsh\profiles\desktop\cordis.patch.yml`:
 
 ```yaml
 - insert:
@@ -40,80 +43,86 @@ dsh plugin --profile desktop add link:E:\MyProject\dsh-link-actions
       name: dsh-link-actions
 ```
 
-**重启客户端**（不是按 `Ctrl+R`：插件条目在 Host 启动时装配）即可生效。
+**Restart the client.** A page reload (`Ctrl+R`) is not enough: the plugin entry is composed when the Host boots.
 
-想换到别的 profile（比如 `dsh web` 用的那个），把上面两处 `desktop` 换成对应名字。
+For another profile — the one `dsh web` uses, for instance — replace `desktop` in both places.
 
-卸载：
+Uninstall:
 
 ```powershell
 dsh plugin --profile desktop remove dsh-link-actions
 ```
 
-再从 `cordis.patch.yml` 里删掉那三行。
+Then delete those three lines from `cordis.patch.yml`.
 
-## 菜单
+## Menu
 
-文件、目录（聊天里的文件名按钮和 `fileMention`）：
+File and folder links — the filename buttons and `fileMention` chips in a message:
 
-| 菜单项 | 行为 |
+| Item | Behavior |
 | --- | --- |
-| 打开 | 交给 Host 桌面用系统默认程序打开；目录则打开文件管理器 |
-| 打开方式 › | 列出系统里已注册的关联应用，点其中一项打开 |
-| 在资源管理器中显示 | 打开文件管理器并选中该文件 |
-| 复制路径 | 复制解析后的绝对路径 |
-| 另存为… | 读取文件字节后用「另存为」对话框写到你选的位置 |
+| Open | Hand the path to the Host desktop's default application; a folder opens in the file manager |
+| Open with › | List the registered handlers for the file and open it with one |
+| Show in file manager | Reveal the file with it selected |
+| Copy path | Copy the resolved absolute path |
+| Save as… | Read the file's bytes and write them to a location you pick |
 
-HTTP(S) 链接（Markdown 里的 `<a>`）：
+HTTP(S) links — ordinary `<a>` elements in the message:
 
-| 菜单项 | 行为 |
+| Item | Behavior |
 | --- | --- |
-| 在默认浏览器中打开 | 新窗口打开 |
-| 复制链接 | 复制 href |
+| Open in browser | Open the URL in a new window |
+| Copy link | Copy the href |
 
-## 实现要点
+## How it works
 
-- **路径从哪来**：渲染器给文件链接的 `title` 是完整路径（`fileMention` 由 resolver 提供，`MarkdownFileLink` 是作者写下的目标），没有 `title` 时退回按钮文本。
-- **相对路径**：用当前会话（`retainedBy.mainView` 命中的那个）的 `cwd` 拼成绝对路径，因为 Host 的 `openWorkspacePath` 会按 Host 进程的 cwd 解析相对路径。
-- **动作复用既有 Remote**：`session.canOpenWorkspacePath`、`session.workspacePathApplications`、`session.openWorkspacePath`、`workspaceFiles.readBytes`，插件不带自己的传输层。
-- **样式复用产品 token**：`--dsw-menu-surface-fill`、`--dsw-elevation-prominent`、`--dsw-alias-*` 等，跟随明暗主题。
-- **零运行时依赖**：客户端半边是一段自包含 ES2022，构建只做 DSH 的 module-loader 握手（`window.__ModuleLoader__.load({ id, factory })`），没有打包器。
+- **Where the path comes from.** The renderer puts the full path in a file link's `title` (the resolver supplies it for `fileMention`, the authored destination for `MarkdownFileLink`); when there is no `title`, the button text is the path.
+- **Relative paths.** They are joined with the viewing Session's `cwd`. The Host resolves relative paths against its own process cwd, which would be wrong.
+- **Existing Remotes only.** `session.canOpenWorkspacePath`, `session.workspacePathApplications`, `session.openWorkspacePath`, and `workspaceFiles.readBytes`; the plugin ships no transport of its own.
+- **Product design tokens.** `--dsw-menu-surface-fill`, `--dsw-elevation-prominent`, `--dsw-alias-*`, so the card follows the active theme.
+- **No runtime dependencies.** The client half is one self-contained ES2022 script; the build only wraps it in the DSH module-loader handshake (`window.__ModuleLoader__.load({ id, factory })`). No bundler.
 
-## 已知限制
+## Verified
 
-- **只作用于会话正文**：`[data-chat-flow]` 之外（侧栏、文档预览）的链接保持原生行为。
-- **目录没有「打开方式」**：系统没有目录级关联，悬停该项时会自行收起。
-- **`[文字](相对路径)` 形式**：按钮里只有作者写的文字，拿不到真实路径时只提供「复制路径」。
-- **另存为受 Host 读取上限约束**（`workspaceFiles` 的 `maxFileBytes`），超大文件会被拒绝；目录无法用这条路径保存。
-- **应用图标可能不显示**：图标走 Host 的 `open-in-app/icon/<id>` 路由，取不到时该项会连同占位一起移除，标签仍然对齐。
-- **依赖内部接口**：`dsh.client` 声明、Remote 名称、`data-chat-flow`、CSS Module 类名中的 `fileMention`/`fileLink` 属于产品内部实现，升级 DSH 后需回归一次。
+Against the shipped `0.2.1-rc.2` runtime, with the same client bundle that npm serves:
 
-## 已验证
-
-在安装版的 `0.2.1-rc.2` 运行时（同一份 client bundle）上跑过：
-
-| 场景 | 结果 |
+| Scenario | Result |
 | --- | --- |
-| **从 npm 安装** | `dsh plugin add dsh-link-actions`（0.1.0，8 文件 / 71.5 kB）后在全新 profile 里启动客户端，右键菜单正常弹出 |
-| **从 GitHub 安装** | `dsh plugin add github:InnovationLou/dsh-link-actions` 后在全新 profile 里启动客户端，右键菜单正常弹出 |
-| 目录链接右键 | 菜单 5 项：打开 / 打开方式 / 在资源管理器中显示 / 复制路径 / 另存为 |
-| 图片文件「打开方式」 | 列出系统关联：画图、照片、VS Code、Typora、Notepad++ … |
-| 「另存为」一个 png | 提示「已保存」，文件落到下载目录，文件名保持不变 |
-| HTTP(S) 链接右键 | 菜单 2 项：在默认浏览器中打开 / 复制链接 |
-| 相对路径 | `ai-niang-images\fish-01-classic.png` 按会话 cwd 解析成功 |
+| Install from npm | `dsh plugin add dsh-link-actions` (0.1.0, 8 files / 71.5 kB), fresh profile, client boot, menu opens |
+| Install from GitHub | `dsh plugin add github:InnovationLou/dsh-link-actions`, fresh profile, client boot, menu opens |
+| Right-click a folder link | Five items: open, open with, show in file manager, copy path, save as |
+| "Open with" on an image | Real handlers listed: Paint, Photos, VS Code, Typora, Notepad++, … |
+| "Save as" on a png | "Saved" notice, file landed in the download directory under its own name |
+| Right-click an HTTP(S) link | Two items: open in browser, copy link |
+| Relative path | `ai-niang-images\fish-01-classic.png` resolved through the Session cwd |
 
-`打开` / `在资源管理器中显示` 走的是同一个 `session.openWorkspacePath` 调用（`reveal` 分支已在代码层核对），未在自动化里真的弹出窗口。
+Open and Show in file manager go through the same `session.openWorkspacePath` call (the `reveal` branch was checked in code) but were not exercised by automation against real windows.
 
-## 开发
+## Limitations
+
+- **Transcript only.** Links outside `[data-chat-flow]` — the sidebar, the document preview — keep their native behavior.
+- **No "open with" for folders.** The OS has no folder-level associations, so that item removes itself when the list resolves empty.
+- **`[label](relative/path)` links.** The button carries only the label the author wrote; when no real path can be recovered, only Copy path is offered.
+- **Save as is bounded** by the Host's `workspaceFiles` read limit (`maxFileBytes`); a directory cannot be saved this way.
+- **Application icons may not render.** They come from the Host's `open-in-app/icon/<id>` route; a missing icon removes its slot so the labels stay aligned.
+- **Internal surfaces.** The `dsh.client` declaration, the Remote names, `data-chat-flow`, and the `fileMention`/`fileLink` CSS-module classes are product internals; re-check after a DSH upgrade.
+
+## Development
 
 ```powershell
-node scripts/build.mjs          # src/ -> lib/（client.js 做 loader 握手）
-node --check lib/client.js      # 语法自检
+node scripts/build.mjs          # src/ -> lib/, including the loader handshake
+node --check lib/client.js      # syntax check
 ```
 
-`tools/` 下是本机验证用的小工具（Node 24 自带 `WebSocket`，直接连 CDP）：`cdp-contextmenu.mjs` 验证链接菜单，`cdp-file-menu.mjs` 验证文件菜单，`cdp-open-with.mjs` 看「打开方式」子菜单，`cdp-save-as.mjs` 端到端跑「另存为」，`cdp-screenshot.mjs` 截图，`asar-head.mjs` 读安装包内的 `app.asar`。
+`tools/` holds the local verification helpers (Node 24 ships `WebSocket`, so they talk to CDP directly): `cdp-contextmenu.mjs` for the link menu, `cdp-file-menu.mjs` for the file menu, `cdp-open-with.mjs` for the submenu, `cdp-save-as.mjs` for an end-to-end save, `cdp-screenshot.mjs` for a capture, and `asar-head.mjs` to read the installed `app.asar`.
 
-`test/overlay.yml` 是把插件临时挂进某个 CLI profile 的 patch 覆盖层，配合 `dsh --profile <name> --patch test/overlay.yml --no-open --port 7401` 做隔离验证，不碰日常使用的 profile。
+`test/overlay.yml` mounts the plugin into a throwaway CLI profile:
+
+```powershell
+dsh --profile <name> --patch test/overlay.yml --no-open --port 7401
+```
+
+so verification never touches the profile you use daily.
 
 ## License
 

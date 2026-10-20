@@ -1,6 +1,6 @@
 {
   "name": "dsh-link-actions",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Right-click menus for DSH chat links: open a file with an application, reveal it in the file manager, copy its path, save a copy, and open or copy URLs.",
   "type": "module",
   "main": "lib/index.js",
@@ -12,7 +12,8 @@
   "files": [
     "lib",
     "src",
-    "scripts"
+    "scripts",
+    "README.zh.md"
   ],
   "license": "MIT",
   "author": "InnovationLou",
