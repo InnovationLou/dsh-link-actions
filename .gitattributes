@@ -1,0 +1,4 @@
+# Keep every text file LF in the repository and in the working tree: the client
+# bundle is built by string concatenation, so a platform-dependent line ending
+# would make the committed lib/ differ from a fresh build.
+* text=auto eol=lf

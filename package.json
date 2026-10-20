@@ -1,0 +1,47 @@
+{
+  "name": "dsh-link-actions",
+  "version": "0.1.0",
+  "description": "Right-click menus for DSH chat links: open a file with an application, reveal it in the file manager, copy its path, save a copy, and open or copy URLs.",
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./client": "./lib/client.js",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib"
+  ],
+  "license": "MIT",
+  "author": "InnovationLou",
+  "keywords": [
+    "dsh-plugin",
+    "deepseek-harness",
+    "context-menu",
+    "plugin"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/InnovationLou/dsh-link-actions.git"
+  },
+  "homepage": "https://github.com/InnovationLou/dsh-link-actions#readme",
+  "bugs": {
+    "url": "https://github.com/InnovationLou/dsh-link-actions/issues"
+  },
+  "engines": {
+    "node": "^22.19.0 || >=24.0.0"
+  },
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "check": "node scripts/build.mjs && node --check lib/client.js"
+  },
+  "dsh": {
+    "client": {
+      "platform": "web",
+      "inject": [
+        "@deepseek-ai/dsh-api-remotes",
+        "@deepseek-ai/dsh-client-ui-session"
+      ]
+    }
+  }
+}

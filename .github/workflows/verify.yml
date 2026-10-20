@@ -1,0 +1,19 @@
+name: verify
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      # Rebuild from src/ and prove the committed lib/ is exactly that build:
+      # the bundle ships in the repository, so a stale one would be a silent bug.
+      - run: npm run check
+      - run: git diff --exit-code -- lib

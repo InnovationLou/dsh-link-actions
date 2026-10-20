@@ -1,0 +1,9 @@
+# Installed output is committed so a git install needs no build step.
+# Keep the lists below in sync with what a checkout must not track.
+node_modules/
+*.log
+*.log.err
+
+# Local verification leftovers
+test/chrome-*/
+test/downloads/
