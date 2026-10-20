@@ -85,6 +85,7 @@ HTTP(S) 链接（Markdown 里的 `<a>`）：
 
 | 场景 | 结果 |
 | --- | --- |
+| **从 GitHub 安装** | `dsh plugin add github:InnovationLou/dsh-link-actions` 后在全新 profile 里启动客户端，右键菜单正常弹出 |
 | 目录链接右键 | 菜单 5 项：打开 / 打开方式 / 在资源管理器中显示 / 复制路径 / 另存为 |
 | 图片文件「打开方式」 | 列出系统关联：画图、照片、VS Code、Typora、Notepad++ … |
 | 「另存为」一个 png | 提示「已保存」，文件落到下载目录，文件名保持不变 |
