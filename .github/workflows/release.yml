@@ -33,6 +33,19 @@ jobs:
       - name: Show toolchain
         run: node --version && npm --version
 
+      # A failed trusted-publish run splits in two: the OIDC request URL missing
+      # (workflow permission or org policy) versus npm not finding the package's
+      # trusted publisher (npm-side configuration). This tells them apart without
+      # ever printing the token.
+      - name: Confirm the OIDC request endpoint exists
+        run: |
+          if [ -n "${ACTIONS_ID_TOKEN_REQUEST_URL:-}" ]; then
+            echo "OIDC request endpoint: present on ${{ github.repository }}@${{ github.ref_name }} (${{ github.workflow }})"
+          else
+            echo "OIDC request endpoint: MISSING — id-token: write did not take effect"
+            exit 1
+          fi
+
       # The bundle ships in the repository, so a release must not publish a
       # stale lib/: rebuild and fail when it differs from what is committed.
       - name: Verify the committed bundle matches src/
